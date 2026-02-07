@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: scout-training-app
+    env: node
+    plan: free
+    buildCommand: npm install && npm run build
+    startCommand: npm run start
+    healthCheckPath: /
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: FIREBASE_PROJECT_ID
+        fromService:
+          type: web
+          name: scout-training-app
+          envVarKey: FIREBASE_PROJECT_ID
+      - key: FIREBASE_SERVICE_ACCOUNT
+        fromService:
+          type: web
+          name: scout-training-app
+          envVarKey: FIREBASE_SERVICE_ACCOUNT
