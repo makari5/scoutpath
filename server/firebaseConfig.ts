@@ -36,7 +36,8 @@ export function initializeFirebaseAdmin() {
         serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
       } catch (e) {
         console.error('❌ Failed to parse FIREBASE_SERVICE_ACCOUNT.');
-        throw new Error('Invalid FIREBASE_SERVICE_ACCOUNT environment variable');
+        // Return null instead of throwing to prevent cold start crash
+        return null; 
       }
 
       const app = initializeApp({
@@ -64,6 +65,6 @@ export function initializeFirebaseAdmin() {
     return app;
   } catch (error) {
     console.error('❌ Error initializing Firebase Admin SDK:', error);
-    throw error;
+    return null;
   }
 }

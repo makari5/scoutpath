@@ -4,11 +4,18 @@ import { initializeFirebaseAdmin } from './firebaseConfig';
 
 // Initialize Firebase Admin SDK
 const app = initializeFirebaseAdmin();
-export const db = getFirestore(app);
+export const db = app ? getFirestore(app) : null;
+
+if (!db) {
+  console.warn("⚠️ Firebase DB not initialized. Check configuration.");
+}
 
 // Firestore service functions
 export class FirestoreUserService {
-  private static collection = db.collection('users');
+  private static get collection() {
+    if (!db) throw new Error("Firebase DB not initialized - check logs for startup errors");
+    return db.collection('users');
+  }
 
   // Find user by serial number (barcode)
   static async findBySerial(serial: string): Promise<User | null> {
@@ -497,6 +504,7 @@ export class FirestoreUserService {
     let updatedCount = 0;
 
     for (const chunk of chunks) {
+      if (!db) throw new Error("Firebase DB not initialized");
       const batch = db.batch();
       for (const u of chunk) {
         const ref = refBySerial.get(u.serial);
