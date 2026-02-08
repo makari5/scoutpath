@@ -482,7 +482,7 @@ export default function CourseDetail() {
                       </div>
                     )}
                     <iframe
-                      src={activePart?.pdfPath}
+                      src={`${activePart?.pdfPath}#toolbar=0&navpanes=0&scrollbar=0`}
                       className="w-full h-full"
                       style={{ minHeight: "70vh", border: "none" }}
                       title={activePart?.title}
