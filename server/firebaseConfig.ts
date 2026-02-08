@@ -11,11 +11,19 @@ export function initializeFirebaseAdmin() {
   }
 
   try {
-    // Check for Firebase service account from environment variable (for Render)
+    // Check for Firebase service account from environment variable (for Render/Vercel)
     if (process.env.FIREBASE_SERVICE_ACCOUNT) {
       console.log('ðŸ”‘ Using Service Account from Environment Variable (Production)');
 
-      const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+      let serviceAccount;
+      try {
+        serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+      } catch (e) {
+        console.error('âŒ Failed to parse FIREBASE_SERVICE_ACCOUNT. Please check if the environment variable is a valid JSON string.');
+        console.error('Error details:', e instanceof Error ? e.message : String(e));
+        // Throwing here to ensure we don't proceed with invalid config or fallback unexpectedly when we *intended* to use the env var.
+        throw new Error('Invalid FIREBASE_SERVICE_ACCOUNT environment variable');
+      }
 
       const app = initializeApp({
         credential: cert(serviceAccount),
