@@ -68,14 +68,19 @@ export function initializeFirebaseAdmin() {
     }
 
     // 2. Check for Firebase service account from environment variable (Fallback)
-    if (process.env.FIREBASE_SERVICE_ACCOUNT) {
-      console.log('🔑 Using Service Account from Environment Variable');
+    if (process.env.FIREBASE_SERVICE_ACCOUNT || process.env.FIREBASE_SERVICE_ACCOUNT_B64) {
+      console.log('???? Using Service Account from Environment Variable');
 
       let serviceAccount;
       try {
-        serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+        if (process.env.FIREBASE_SERVICE_ACCOUNT_B64) {
+          const decoded = Buffer.from(process.env.FIREBASE_SERVICE_ACCOUNT_B64, 'base64').toString('utf-8');
+          serviceAccount = JSON.parse(decoded);
+        } else {
+          serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT as string);
+        }
       } catch (e) {
-        console.error('❌ Failed to parse FIREBASE_SERVICE_ACCOUNT.');
+        console.error('??? Failed to parse FIREBASE_SERVICE_ACCOUNT.');
         // Return null instead of throwing to prevent cold start crash
         return null; 
       }
