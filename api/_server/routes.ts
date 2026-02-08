@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { z } from "zod";
-import { barcodeLoginSchema } from "@shared/schema";
+import { barcodeLoginSchema } from "../../shared/schema.js";
 import { FirestoreUserService } from "./firebase.js";
 
 export async function registerRoutes(app: Express): Promise<Server> {
