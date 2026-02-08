@@ -18,7 +18,10 @@ export function initializeFirebaseAdmin() {
     try {
       console.log('🔍 Attempting to load serviceAccountKey.json...');
       const serviceAccount = require('./serviceAccountKey.json');
-      // ... (rest of priority 1)
+      const app = initializeApp({
+        credential: cert(serviceAccount),
+        projectId: serviceAccount.project_id,
+      });
       console.log('✅ Firebase Admin SDK initialized with serviceAccountKey.json');
       return app;
     } catch (err) {
@@ -27,10 +30,26 @@ export function initializeFirebaseAdmin() {
 
     // 1.5 Try to load firebase-secret.b64 (Base64 Encoded Fallback for GitHub)
     try {
-      const b64Path = resolve(dirname(fileURLToPath(import.meta.url)), 'firebase-secret.b64');
-      if (existsSync(b64Path)) {
-        console.log('🔍 Found firebase-secret.b64, decoding...');
-        const b64Content = readFileSync(b64Path, 'utf-8');
+      console.log('🔍 Checking for firebase-secret.b64...');
+      console.log('📂 Current Working Directory:', process.cwd());
+      
+      const potentialPaths = [
+        resolve(dirname(fileURLToPath(import.meta.url)), 'firebase-secret.b64'), // Relative to this file
+        resolve(process.cwd(), 'server', 'firebase-secret.b64'),             // Relative to project root
+        resolve(process.cwd(), 'firebase-secret.b64'),                       // If flattened
+      ];
+
+      let foundPath = null;
+      for (const p of potentialPaths) {
+        if (existsSync(p)) {
+          foundPath = p;
+          break;
+        }
+      }
+
+      if (foundPath) {
+        console.log(`✅ Found secret file at: ${foundPath}`);
+        const b64Content = readFileSync(foundPath, 'utf-8');
         const jsonContent = Buffer.from(b64Content, 'base64').toString('utf-8');
         const serviceAccount = JSON.parse(jsonContent);
 
@@ -41,6 +60,8 @@ export function initializeFirebaseAdmin() {
 
         console.log('✅ Firebase Admin SDK initialized with Decoded Secret');
         return app;
+      } else {
+        console.warn('⚠️ firebase-secret.b64 not found in any expected location:', potentialPaths);
       }
     } catch (err) {
       console.error('⚠️ Failed to load/decode firebase-secret.b64:', err);
