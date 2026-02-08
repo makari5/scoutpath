@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { z } from "zod";
 import { barcodeLoginSchema } from "../../shared/schema.js";
-import { FirestoreUserService } from "./firebase.js";
+import { FirestoreUserService, FirestoreSystemSettings } from "./firebase.js";
 
 export async function registerRoutes(app: Express): Promise<Server> {
 
@@ -46,6 +46,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
         error: "Server error",
         message: error instanceof Error ? error.message : "حدث خطأ في تسجيل الدخول",
       });
+    }
+  });
+
+  // Get system settings (Season Start Date)
+  app.get("/api/settings", async (_req, res) => {
+    try {
+      const settings = await FirestoreSystemSettings.getSettings();
+      res.json({ settings });
+    } catch (error) {
+      console.error("Get settings error:", error);
+      res.status(500).json({ error: "Server error" });
+    }
+  });
+
+  // Admin: Start new season
+  app.post("/api/admin/start-season", async (req, res) => {
+    try {
+      // Check admin permission (simple check for user 101 or token)
+      // For this specific request, we trust the frontend check or add a simple body token
+      if (!requireAdmin(req, res)) return;
+
+      await FirestoreSystemSettings.startNewSeason();
+      res.json({ success: true, message: "تم بدء الموسم الجديد بنجاح" });
+    } catch (error) {
+      console.error("Start season error:", error);
+      res.status(500).json({ error: "Server error" });
     }
   });
 

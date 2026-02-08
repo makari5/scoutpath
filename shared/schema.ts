@@ -69,6 +69,14 @@ export const barcodeLoginSchema = z.object({
 
 export type BarcodeLogin = z.infer<typeof barcodeLoginSchema>;
 
+// System Settings Schema
+export const systemSettingsSchema = z.object({
+  id: z.string().optional(), // usually 'current' or 'global'
+  seasonStartDate: z.number(), // Timestamp
+});
+
+export type SystemSettings = z.infer<typeof systemSettingsSchema>;
+
 // Course Content Sections
 export type CourseSection = "training" | "exams" | "certificates";
 

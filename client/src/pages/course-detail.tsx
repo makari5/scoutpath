@@ -48,6 +48,7 @@ export default function CourseDetail() {
   const { toast } = useToast();
 
   const [user, setUser] = useState<User | null>(null);
+  const [seasonStartDate, setSeasonStartDate] = useState<number>(new Date('2026-02-08T00:00:00Z').getTime());
   const [selectedPartId, setSelectedPartId] = useState<number | null>(null);
   const [isLoadingPdf, setIsLoadingPdf] = useState(true);
 
@@ -68,6 +69,18 @@ export default function CourseDetail() {
   }, [setLocation]);
 
   useEffect(() => {
+    // Fetch global settings
+    apiRequest("GET", "/api/settings").then(async (res) => {
+      if (res.ok) {
+        const data = await res.json();
+        if (data.settings?.seasonStartDate) {
+          setSeasonStartDate(data.settings.seasonStartDate);
+        }
+      }
+    });
+  }, []);
+
+  useEffect(() => {
     if (!user?.id) return;
     (async () => {
       try {
@@ -81,7 +94,7 @@ export default function CourseDetail() {
         return;
       }
     })();
-  }, [user?.id]);
+  }, [user?.id, seasonStartDate]);
 
   const currentStage = user?.currentStage === 7.5 ? 8 : user?.currentStage || 1;
   const isUnlocked = courseId <= currentStage;
@@ -91,9 +104,11 @@ export default function CourseDetail() {
     (trainingProgress.courses?.[String(courseId)] as CourseProgress | undefined) ??
     emptyProgress;
 
-  const startedAt = courseProgress.startedAt;
-  const expiresAt = startedAt ? addMonths(startedAt, 6) : null;
-  const isExpired = expiresAt ? Date.now() > expiresAt : false;
+  // Global season logic
+  const expiresAt = addMonths(seasonStartDate, 6);
+  const isExpired = Date.now() > expiresAt;
+  
+  const startedAt = courseProgress.startedAt; // Entry time
 
   const passedParts = new Set(courseProgress.passedParts ?? []);
   const readParts = new Set(courseProgress.readParts ?? []);
@@ -157,6 +172,14 @@ export default function CourseDetail() {
   const startCourse = async () => {
     if (!isUnlocked) return;
     if (startedAt) return;
+    if (isExpired) {
+        toast({
+            title: "عفواً",
+            description: "الموسم منتهي حالياً. انتظر بدء الموسم الجديد.",
+            variant: "destructive"
+        });
+        return;
+    }
     await updateTrainingProgress({
       courseId,
       startedAt: Date.now(),
@@ -273,7 +296,7 @@ export default function CourseDetail() {
   const exam = examPart ? getPartExam(courseId, examPart.id, examPart.title) : null;
 
   const timeRemainingDays =
-    expiresAt && !isExpired ? Math.max(Math.ceil((expiresAt - Date.now()) / 86400000), 0) : 0;
+    !isExpired ? Math.max(Math.ceil((expiresAt - Date.now()) / 86400000), 0) : 0;
 
   return (
     <div className="min-h-screen relative overflow-hidden bg-background" dir="rtl">

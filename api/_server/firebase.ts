@@ -1,5 +1,5 @@
 import { getFirestore, FieldValue } from 'firebase-admin/firestore';
-import type { User } from '../../shared/schema.js';
+import type { User, SystemSettings } from '../../shared/schema.js';
 import { initializeFirebaseAdmin } from './firebaseConfig.js';
 
 // Initialize Firebase Admin SDK
@@ -8,6 +8,41 @@ export const db = app ? getFirestore(app) : null;
 
 if (!db) {
   console.warn("⚠️ Firebase DB not initialized. Check configuration.");
+}
+
+export class FirestoreSystemSettings {
+  private static get collection() {
+    if (!db) throw new Error("Firebase DB not initialized");
+    return db.collection('settings');
+  }
+
+  static async getSettings(): Promise<SystemSettings> {
+    try {
+      const doc = await this.collection.doc('global').get();
+      if (!doc.exists) {
+        // Default to a fixed date if not set (Feb 8, 2026)
+        const defaultDate = new Date('2026-02-08T00:00:00Z').getTime();
+        return { seasonStartDate: defaultDate };
+      }
+      return doc.data() as SystemSettings;
+    } catch (error) {
+      console.error('Error fetching settings:', error);
+      // Fallback
+      return { seasonStartDate: new Date('2026-02-08T00:00:00Z').getTime() };
+    }
+  }
+
+  static async startNewSeason(): Promise<void> {
+    try {
+      await this.collection.doc('global').set({
+        seasonStartDate: Date.now(),
+      });
+      console.log('✅ New season started!');
+    } catch (error) {
+      console.error('Error starting new season:', error);
+      throw error;
+    }
+  }
 }
 
 // Firestore service functions
