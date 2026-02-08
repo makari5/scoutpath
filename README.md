@@ -1,108 +1,68 @@
 # ScoutPath
 
-A comprehensive educational platform designed for scouting training, offering structured courses, interactive exams, and progress tracking. This full-stack application provides a seamless learning experience for new scouts, leaders, and program developers.
+ScoutPath is a comprehensive scouting management platform designed to track progress, manage courses, and handle exams for scout members. It features a React frontend and an Express backend, integrated with Firebase for data persistence.
 
 ## Features
 
-*   **Structured Courses:** Organize training material into courses and parts (chapters).
-*   **Interactive Exams:** Test knowledge with dynamic quizzes, featuring multiple-choice questions and immediate feedback.
-*   **Progress Tracking:** Users can track their read parts, passed exams, and overall course completion.
-*   **Role-Based Access:** Different stages for users (e.g., new scouts, leaders) control access to courses.
-*   **Certificate Generation:** Automatically generate certificates upon course completion.
-*   **Admin Tools:** Backend functionalities for managing users and their progress.
-*   **Responsive UI:** Built with modern web technologies for a great user experience on any device.
+- **User Management**: Track scout progress, stages, and achievements.
+- **Course System**: Structured courses with reading materials (PDFs) and exams.
+- **Exams**: Automated grading and result tracking.
+- **Certificates**: Generate certificates upon course completion.
+- **Admin Dashboard**: Manage users and view system statistics.
 
-## Technologies Used
+## Tech Stack
 
-### Frontend
-*   **React:** A JavaScript library for building user interfaces.
-*   **Vite:** A fast build tool for modern web projects.
-*   **TypeScript:** Superset of JavaScript that adds type safety.
-*   **Tailwind CSS:** A utility-first CSS framework for rapid UI development.
-*   **Shadcn/ui:** A collection of reusable UI components.
-*   **Wouter:** A tiny routing library for React.
-*   **Lucide React:** A beautiful collection of open-source icons.
-
-### Backend
-*   **Node.js:** JavaScript runtime environment.
-*   **Express.js:** Fast, unopinionated, minimalist web framework for Node.js.
-*   **TypeScript:** For type-safe backend development.
-*   **Drizzle ORM:** A modern TypeScript ORM for SQL databases.
-*   **Firestore:** Used for user management and progress tracking.
-*   **Firebase Admin SDK:** For secure backend interactions with Firebase.
-*   **esbuild:** An extremely fast JavaScript bundler.
-
-### Database
-*   **PostgreSQL** (likely via NeonDB/Drizzle)
-
-### Deployment
-*   **Vercel:** Platform for frontend frameworks and static sites.
+- **Frontend**: React, TypeScript, Vite, Tailwind CSS, shadcn/ui
+- **Backend**: Node.js, Express, Firebase Admin SDK
+- **Database**: Firestore (via Firebase Admin)
 
 ## Project Structure
 
-*   `client/`: Contains the React frontend application.
-    *   `src/`: Source code for the client.
-        *   `pages/`: React components for different pages (e.g., `course-exam.tsx`, `course-home.tsx`).
-        *   `lib/`: Utility functions and helper modules (e.g., `exams.ts`, `utils.ts`).
-        *   `components/`: Reusable UI components.
-*   `server/`: Contains the Node.js/Express backend application.
-    *   `index.ts`: Main entry point for the server.
-    *   `routes.ts`: Defines API endpoints.
-    *   `firebase.ts`: Firebase integration logic.
-*   `shared/`: Contains shared TypeScript types and schemas (e.g., `schema.ts`).
-*   `ملف الامتحانات/`: (Exam Files) Contains the raw text files for exam questions, which are processed into `client/src/lib/exams.ts`.
+- `client/`: React frontend application.
+- `server/`: Express backend application.
+- `shared/`: Shared TypeScript types and schemas.
+- `api/`: Vercel Serverless Function entry point.
+- `dist/`: Build output directory.
 
-## Getting Started
+## Local Development
 
-### Prerequisites
-
-*   Node.js (LTS version recommended)
-*   npm (comes with Node.js) or yarn
-
-### Installation
-
-1.  **Clone the repository:**
-    ```bash
-    git clone https://github.com/makari5/scoutpath.git
-    cd scoutpath
-    ```
-
-2.  **Install dependencies:**
+1.  **Install Dependencies**:
     ```bash
     npm install
     ```
 
-### Running Locally
+2.  **Environment Setup**:
+    - Create a `.env` file in the root directory.
+    - Add your Firebase configuration (see `server/firebaseConfig.ts` for details).
+    - Place your `serviceAccountKey.json` in `server/` or set `FIREBASE_SERVICE_ACCOUNT` env var.
 
-1.  **Start the development server:**
-    This command will start both the client (Vite development server) and the backend (Express server).
+3.  **Run Development Server**:
     ```bash
     npm run dev
     ```
-    The application should be accessible at `http://localhost:5173` (or another port if 5173 is in use).
+    This starts both the backend (port 5000) and frontend (via Vite proxy).
 
-### Building for Production
+## Deployment
 
-1.  **Build the application:**
-    This command compiles both the frontend and backend for production.
-    ```bash
-    npm run build
-    ```
-    The client build will be in `client/dist/public` and the server build in `dist/`.
+### Vercel (Recommended)
 
-## Deployment to Vercel
+This project is configured for deployment on Vercel.
 
-This project is configured for seamless deployment to Vercel using the `vercel.json` file.
+1.  **Install Vercel CLI** (optional) or connect your GitHub repository to Vercel.
+2.  **Environment Variables**:
+    - Add `FIREBASE_SERVICE_ACCOUNT` to your Vercel project settings. The value should be the **content** of your service account JSON file, minified into a single line string.
+3.  **Deploy**:
+    - Push to main branch (if connected to Git).
+    - Or run `vercel deploy`.
 
-1.  **Connect your GitHub Repository:** Link your `scoutpath` repository to Vercel.
-2.  **Configure Root Directory:** Ensure the "Root Directory" for your Vercel project is set to `./` (the project root).
-3.  **Environment Variables:** Add any necessary environment variables (e.g., Firebase credentials, database URLs) in your Vercel project settings.
-4.  **Deployment:** Vercel will automatically detect the `vercel.json` file and deploy your static frontend and serverless API functions.
+### Netlify
 
-## Contribution
+The frontend is configured for Netlify deployment via the `_redirects` file.
 
-Contributions are welcome! Please feel free to open issues or pull requests.
+1.  **Build Command**: `npm run build`
+2.  **Publish Directory**: `dist/public`
+3.  **Environment Variables**: Same as Vercel if you are running backend functions, otherwise configure your frontend-only variables.
 
 ## License
 
-This project is licensed under the MIT License.
+MIT
