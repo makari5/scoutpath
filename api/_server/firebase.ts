@@ -1,6 +1,6 @@
 import { getFirestore, FieldValue } from 'firebase-admin/firestore';
 import type { User } from '@shared/schema';
-import { initializeFirebaseAdmin } from './firebaseConfig';
+import { initializeFirebaseAdmin } from './firebaseConfig.js';
 
 // Initialize Firebase Admin SDK
 const app = initializeFirebaseAdmin();
