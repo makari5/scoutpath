@@ -1,5 +1,8 @@
 import { initializeApp, cert, getApps } from 'firebase-admin/app';
 import { createRequire } from 'module';
+import { readFileSync, existsSync } from 'fs';
+import { resolve, dirname } from 'path';
+import { fileURLToPath } from 'url';
 
 const require = createRequire(import.meta.url);
 
@@ -15,16 +18,32 @@ export function initializeFirebaseAdmin() {
     try {
       console.log('🔍 Attempting to load serviceAccountKey.json...');
       const serviceAccount = require('./serviceAccountKey.json');
-      
-      const app = initializeApp({
-        credential: cert(serviceAccount),
-        projectId: serviceAccount.project_id,
-      });
-
+      // ... (rest of priority 1)
       console.log('✅ Firebase Admin SDK initialized with serviceAccountKey.json');
       return app;
     } catch (err) {
-      console.log('⚠️ serviceAccountKey.json not found or invalid, trying environment variable...');
+      console.log('⚠️ serviceAccountKey.json not found, checking for encoded secret...');
+    }
+
+    // 1.5 Try to load firebase-secret.b64 (Base64 Encoded Fallback for GitHub)
+    try {
+      const b64Path = resolve(dirname(fileURLToPath(import.meta.url)), 'firebase-secret.b64');
+      if (existsSync(b64Path)) {
+        console.log('🔍 Found firebase-secret.b64, decoding...');
+        const b64Content = readFileSync(b64Path, 'utf-8');
+        const jsonContent = Buffer.from(b64Content, 'base64').toString('utf-8');
+        const serviceAccount = JSON.parse(jsonContent);
+
+        const app = initializeApp({
+          credential: cert(serviceAccount),
+          projectId: serviceAccount.project_id,
+        });
+
+        console.log('✅ Firebase Admin SDK initialized with Decoded Secret');
+        return app;
+      }
+    } catch (err) {
+      console.error('⚠️ Failed to load/decode firebase-secret.b64:', err);
     }
 
     // 2. Check for Firebase service account from environment variable (Fallback)
