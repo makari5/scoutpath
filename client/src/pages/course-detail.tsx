@@ -24,12 +24,6 @@ import { apiRequest } from "@/lib/queryClient";
 import { getPartExam } from "@/lib/exams";
 import { formatRemainingTime } from "@/lib/utils";
 
-// React PDF Viewer imports
-import { Worker, Viewer } from '@react-pdf-viewer/core';
-import { defaultLayoutPlugin } from '@react-pdf-viewer/default-layout';
-import '@react-pdf-viewer/core/lib/styles/index.css';
-import '@react-pdf-viewer/default-layout/lib/styles/index.css';
-
 type CourseProgress = {
   startedAt?: number;
   readParts: number[];
@@ -64,49 +58,6 @@ export default function CourseDetail() {
 
   const courseId = params?.id ? parseInt(params.id, 10) : 0;
   const course = courses.find((c) => c.id === courseId);
-
-  // Configure PDF Viewer Plugin to hide Download and Print buttons
-  const defaultLayoutPluginInstance = defaultLayoutPlugin({
-    sidebarTabs: (defaultTabs) => [], // Optional: Hide sidebar tabs if you want a cleaner look
-    renderToolbar: (Toolbar) => (
-      <Toolbar>
-        {(slots) => {
-          const {
-            CurrentPageInput,
-            GoToNextPage,
-            GoToPreviousPage,
-            NumberOfPages,
-            ZoomIn,
-            ZoomOut,
-            EnterFullScreen,
-          } = slots;
-          return (
-            <div
-              style={{
-                alignItems: 'center',
-                display: 'flex',
-                width: '100%',
-                justifyContent: 'space-between',
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center' }}>
-                <GoToPreviousPage />
-                <CurrentPageInput />
-                <span style={{ margin: '0 8px' }}>/</span>
-                <NumberOfPages />
-                <GoToNextPage />
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center' }}>
-                <ZoomOut />
-                <ZoomIn />
-                <EnterFullScreen />
-              </div>
-            </div>
-          );
-        }}
-      </Toolbar>
-    ),
-  });
 
   useEffect(() => {
     const storedUser = localStorage.getItem("currentUser");
@@ -521,16 +472,23 @@ export default function CourseDetail() {
                     </div>
                   </div>
                 ) : (
-                  <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js">
-                    <div style={{ height: '70vh' }}>
-                      <Viewer
-                        fileUrl={activePart?.pdfPath || ''}
-                        plugins={[defaultLayoutPluginInstance]}
-                        defaultScale={1.0}
-                        onDocumentLoad={() => setIsLoadingPdf(false)}
-                      />
-                    </div>
-                  </Worker>
+                  <>
+                    {isLoadingPdf && (
+                      <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-card to-primary/10 z-10">
+                        <div className="text-center space-y-4">
+                          <Sparkles className="w-10 h-10 animate-pulse text-primary mx-auto" />
+                          <p className="text-sm text-muted-foreground font-medium">جاري تحميل الملف...</p>
+                        </div>
+                      </div>
+                    )}
+                    <iframe
+                      src={`${activePart?.pdfPath}#toolbar=0&navpanes=0&scrollbar=0`}
+                      className="w-full h-full"
+                      style={{ minHeight: "70vh", border: "none" }}
+                      title={activePart?.title}
+                      onLoad={() => setIsLoadingPdf(false)}
+                    />
+                  </>
                 )}
               </div>
             </Card>

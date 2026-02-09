@@ -3,7 +3,9 @@ import { useLocation, useRoute } from "wouter";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowRight, FileText, Lock, Sparkles } from "lucide-react";
+import { ArrowRight, Lock, Sparkles } from "lucide-react";
+import { Worker, Viewer } from "@react-pdf-viewer/core";
+import "@react-pdf-viewer/core/lib/styles/index.css";
 import type { CoursePart, User } from "@shared/schema";
 import { courses } from "@shared/schema";
 import { useToast } from "@/hooks/use-toast";
@@ -30,7 +32,6 @@ export default function CourseRead() {
   const { toast } = useToast();
 
   const [user, setUser] = useState<User | null>(null);
-  const [isLoadingPdf, setIsLoadingPdf] = useState(true);
 
   const courseId = params?.id ? parseInt(params.id, 10) : 0;
   const partId = params?.partId ? parseInt(params.partId, 10) : 0;
@@ -217,23 +218,21 @@ export default function CourseRead() {
                 </div>
               </div>
             ) : (
-              <>
-                {isLoadingPdf && (
-                  <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-card to-primary/10 z-10">
-                    <div className="text-center space-y-4">
-                      <FileText className="w-10 h-10 animate-pulse text-primary mx-auto" />
-                      <p className="text-sm text-muted-foreground font-medium">جاري تحميل الملف...</p>
-                    </div>
-                  </div>
-                )}
-                <iframe
-                  src={activePart.pdfPath}
-                  className="w-full h-full"
-                  style={{ minHeight: "70vh", border: "none" }}
-                  title={activePart.title}
-                  onLoad={() => setIsLoadingPdf(false)}
-                />
-              </>
+              <div
+                className="w-full h-full select-none"
+                style={{
+                  userSelect: 'none',
+                  WebkitUserSelect: 'none',
+                  MozUserSelect: 'none',
+                  height: '800px'
+                }}
+                onContextMenu={(e) => e.preventDefault()}
+                onDragStart={(e) => e.preventDefault()}
+              >
+                <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js">
+                  <Viewer fileUrl={activePart.pdfPath} />
+                </Worker>
+              </div>
             )}
           </div>
         </Card>
